@@ -12,7 +12,7 @@ from torch_geometric.datasets import TUDataset
 from tqdm import tqdm
 from cpgDataset import cpgDataset
 from model import Model
-from utils import Indegree
+# from utils import Indegree
 from set_determ import set_determ
 from sklearn.model_selection import KFold
 
@@ -190,7 +190,7 @@ if __name__ == '__main__':
     #             cm = over_matrix['matrix']
     #             cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
                 
-    data_set = cpgDataset(root="data/")
+    data_set = cpgDataset(root="data/", test=True)
     
     hidden_layers = [32, 64, 128]
     depth = [2, 3, 4]
@@ -236,7 +236,7 @@ if __name__ == '__main__':
             pd.DataFrame(data=fold_results, index=range(1, opt.num_epochs + 1)).to_csv(
                     f'statistics/{opt.data_type}_results_{model[2]}.csv', index_label='epoch')
 
-                 # ─── Model ─────────────────────────────────────
+                # ─── Model ─────────────────────────────────────
 
             over_results['train_accuracy'].append(max(fold_results['train_accuracy']))
                     # print(over_results['test_accuracy'])

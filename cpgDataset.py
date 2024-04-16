@@ -22,25 +22,21 @@ class cpgDataset(Dataset):
 
     @property
     def processed_file_names(self):
-        self.data = {}             
-
-        for i in range(0, 5400, 300):
-            filename = f"./data/CPG/train_set_{i}.pkl"
-            with open(filename, "rb") as f:
-                chunk = pickle.load(f)            
-            self.data.update(chunk)
-
-        # for i in range(0, 1900, 300):
-        #     filename = f"./data/CPG/CWE_89/train_set_{i}.pkl"
-        #     with open(filename, "rb") as f:
-        #         chunk = pickle.load(f)            
-        #     self.data.update(chunk)
-             
-
+        self.data = {}        
         if self.test:
-            return [f'data_test_{i}.pt' for i in self.data]
+            # for i in range(0, 1500, 300):
+                # filename = f"./data/CPG/test_set_{i}.pkl"
+                # with open(filename, "rb") as f:
+                #     chunk = pickle.load(f)            
+                # self.data.update(chunk)
+            return [f'data_test_{i}.pt' for i in range(0, 1200)]
         else:
-            return [f'data_{i}.pt' for i in self.data]
+            # for i in range(0, 5700, 300):
+            #     filename = f"./data/CPG/train_set_{i}.pkl"
+            #     with open(filename, "rb") as f:
+            #         chunk = pickle.load(f)            
+            #     self.data.update(chunk)
+            return [f'data_{i}.pt' for i in range(0, 5600)]
 
     def download(self):
         # Download to `self.raw_dir`.
@@ -48,21 +44,18 @@ class cpgDataset(Dataset):
 
     def process(self):        
         self.data = {}   
-        # for i in range(0, 1900, 300):
-        #     filename = f"./data/CPG/CWE_89/train_set_{i}.pkl"
-        #     with open(filename, "rb") as f:
-        #         chunk = pickle.load(f)            
-        #     self.data.update(chunk)   
-        # for i in range(0, 2130, 300):
-        #     filename = f"./data/CPG/CWE_89/train_set_{i}.pkl"
-        #     with open(filename, "rb") as f:
-        #         chunk = pickle.load(f)            
-        #     self.data.update(chunk)
-        for i in range(0, 5400, 300):
-            filename = f"./data/CPG/train_set_{i}.pkl"
-            with open(filename, "rb") as f:
-                chunk = pickle.load(f)            
-            self.data.update(chunk)
+        if self.test:
+            for i in range(0, 1500, 300):
+                filename = f"./data/CPG/test_set_{i}.pkl"
+                with open(filename, "rb") as f:
+                    chunk = pickle.load(f)            
+                self.data.update(chunk)
+        else:        
+            for i in range(0, 5600, 300):
+                filename = f"./data/CPG/train_set_{i}.pkl"
+                with open(filename, "rb") as f:
+                    chunk = pickle.load(f)            
+                self.data.update(chunk)
         for index in self.data:            
             # node_feature = torch.tensor(self.data[index]['nodes'], dtype=torch.float).reshape([-1, 1])
             

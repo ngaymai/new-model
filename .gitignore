@@ -2,3 +2,4 @@ epochs/
 __pycache__/
 results/
 statistics/
+data/

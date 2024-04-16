@@ -158,3 +158,7 @@ The train loss、accuracy, test loss、accuracy are showed on visdom.
 ![result](results/imdbb.png)
 ### IMDB-M
 ![result](results/imdbm.png)
+
+## run cmd
+
+python validation.py  --num_epochs 200
