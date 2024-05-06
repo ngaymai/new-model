@@ -8,35 +8,30 @@ from tqdm import tqdm
 import json
 import pickle
 class cpgDataset(Dataset):
-    def __init__(self, root, test=False, transform=None, pre_transform=None, pre_filter=None):               
-        self.test = test        
+    def __init__(self, root, test=False, typ=None,transform=None, pre_transform=None, pre_filter=None):               
+        self.test = test  
+        self.typ = typ      
         super(cpgDataset, self).__init__(root, transform, pre_transform, pre_filter)
         # For PyG<2.4:
         # self.data, self.slices = torch.load(self.processed_paths[0])
 
     @property
-    def raw_file_names(self):
-        # return ['train.zip']
-        return ['CWE89_main.txt']
+    def raw_file_names(self):        
+        return ['raw.txt']
         # pass
 
     @property
-    def processed_file_names(self):
-        self.data = {}        
-        if self.test:
-            # for i in range(0, 1500, 300):
-                # filename = f"./data/CPG/test_set_{i}.pkl"
-                # with open(filename, "rb") as f:
-                #     chunk = pickle.load(f)            
-                # self.data.update(chunk)
-            return [f'data_test_{i}.pt' for i in range(0, 1200)]
+    def processed_file_names(self):       
+        if self.typ == 'CWE_89':
+            if self.test:
+                return [f'CWE_89_data_test_{i}.pt' for i in range(530)]
+            else:
+                return [f'CWE_89_data_{i}.pt' for i in range(2112)]
         else:
-            # for i in range(0, 5700, 300):
-            #     filename = f"./data/CPG/train_set_{i}.pkl"
-            #     with open(filename, "rb") as f:
-            #         chunk = pickle.load(f)            
-            #     self.data.update(chunk)
-            return [f'data_{i}.pt' for i in range(0, 5600)]
+            if self.test:
+                return [f'CWE_79_data_test_{i}.pt' for i in range(1000)]
+            else:
+                return [f'CWE_79_data_{i}.pt' for i in range(4000)]
 
     def download(self):
         # Download to `self.raw_dir`.
@@ -44,57 +39,85 @@ class cpgDataset(Dataset):
 
     def process(self):        
         self.data = {}   
-        if self.test:
-            for i in range(0, 1500, 300):
-                filename = f"./data/CPG/test_set_{i}.pkl"
-                with open(filename, "rb") as f:
-                    chunk = pickle.load(f)            
-                self.data.update(chunk)
-        else:        
-            for i in range(0, 5600, 300):
-                filename = f"./data/CPG/train_set_{i}.pkl"
-                with open(filename, "rb") as f:
-                    chunk = pickle.load(f)            
-                self.data.update(chunk)
-        for index in self.data:            
-            # node_feature = torch.tensor(self.data[index]['nodes'], dtype=torch.float).reshape([-1, 1])
+        if self.typ == 'CWE_89':   
+            if self.test:
+                for i in range(0, 530, 300):
+                    filename = f"./data/CPG/CWE_89/CWE_89_test_set_{i}.pkl"
+                    with open(filename, "rb") as f:
+                        chunk = pickle.load(f)            
+                    self.data.update(chunk)
+            else:
+                for i in range(0, 2112, 300):
+                    filename = f"./data/CPG/CWE_89/CWE_89_train_set_{i}.pkl"
+                    with open(filename, "rb") as f:
+                        chunk = pickle.load(f)            
+                    self.data.update(chunk)
+        else:
+            if self.test:
+                for i in range(0, 1000, 300):
+                    filename = f"./data/CPG/CWE_79/CWE_79_test_set_{i}.pkl"
+                    with open(filename, "rb") as f:
+                        chunk = pickle.load(f)            
+                    self.data.update(chunk)
+            else:
+                for i in range(0, 4000, 300):
+                    filename = f"./data/CPG/CWE_79/CWE_79_train_set_{i}.pkl"
+                    with open(filename, "rb") as f:
+                        chunk = pickle.load(f)            
+                    self.data.update(chunk)
+        for index in self.data:                       
             
-            node_feature = torch.tensor(self.data[index]['nodes'], dtype=torch.float)
-            # edge_feature = torch.tensor(self.data[index]['edge_feature'], dtype=torch.float)
+            node_feature = torch.tensor(self.data[index]['nodes'], dtype=torch.float)            
             edge_index = torch.tensor(self.data[index]['edges'], dtype=torch.float)
             edge_index = edge_index.t().to(torch.long).view(2, -1)
             label = torch.tensor([self.data[index]['label']])
             data = Data(x=node_feature, 
-                        edge_index=edge_index,
-                        # edge_attr=edge_feature,
+                        edge_index=edge_index,                        
                         y=label
                         ) 
-            if self.test:
-                torch.save(data,
-                           os.path.join(self.processed_dir,
-                                        f'data_test_{index}.pt'))
+            if self.typ == 'CWE_89':                
+                if self.test:
+                    torch.save(data,
+                            os.path.join(self.processed_dir,
+                                            f'CWE_89_data_test_{index}.pt'))
+                else:
+                    torch.save(data,
+                            os.path.join(self.processed_dir,
+                                            f'CWE_89_data_{index}.pt'))
             else:
-                torch.save(data,
-                           os.path.join(self.processed_dir,
-                                        f'data_{index}.pt'))
+                if self.test:
+                    torch.save(data,
+                            os.path.join(self.processed_dir,
+                                            f'CWE_79_data_test_{index}.pt'))
+                else:
+                    torch.save(data,
+                            os.path.join(self.processed_dir,
+                                            f'CWE_79_data_{index}.pt'))
     def len(self):
-        return len(self.data)
+        return len(self.processed_file_names)
 
     def get(self, idx):
         """ - Equivalent to __getitem__ in pytorch
             - Is not needed for PyG's InMemoryDataset
         """
-        if self.test:
-            data = torch.load(os.path.join(self.processed_dir, 
-                                 f'data_test_{idx}.pt'))
+        if self.typ == 'CWE_89':
+            if self.test:
+                data = torch.load(os.path.join(self.processed_dir, 
+                                    f'CWE_89_data_test_{idx}.pt'))
+            else:
+                data = torch.load(os.path.join(self.processed_dir, 
+                                    f'CWE_89_data_{idx}.pt'))  
         else:
-            data = torch.load(os.path.join(self.processed_dir, 
-                                 f'data_{idx}.pt'))   
+            if self.test:
+                data = torch.load(os.path.join(self.processed_dir, 
+                                    f'CWE_79_data_test_{idx}.pt'))
+            else:
+                data = torch.load(os.path.join(self.processed_dir, 
+                                    f'CWE_79_data_{idx}.pt')) 
         return data
     def num_node_features(self):
         return len(self.get(1).x[0])
-    # def num_edge_features(self):
-    #     return len(self.get(1).edge_attr[0])
+
     def num_classes(self):
         return 2
 
